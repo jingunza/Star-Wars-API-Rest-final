@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, Users, People, Favorite_people # Planets, Favorite_planets
+from models import db, Users, People, Favorite_people #, Planets, Favorite_planets
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -34,12 +34,20 @@ def sitemap():
 
 ### _________ User: _________ ###
 
+@app.route('/favpeople', methods=['GET'])  #### pasar en limpio este endpoint para que arroje data adicional a los id
+def get_favpeople():
+
+    favoritos_planetas = Favorite_people.query.all()
+    favoritos_planetas_ser = list(map(lambda x: x.serialize(), favoritos_planetas))
+    return jsonify(favoritos_planetas_ser), 200
+
 @app.route('/users', methods=['GET'])
 def get_users():
 
     users = Users.query.all()
+    print(users)
     all_users = list(map(lambda x: x.serialize(), users))
-
+    print(all_users)
     return jsonify(all_users), 200
 
 @app.route('/users/<int:user_id>', methods=['GET'])
@@ -69,12 +77,12 @@ def update_user(user_id):
     user1 = User.query.get(user_id)
     if user1 is None:
         raise APIException('User not found', status_code=404)
-    if "user_id" in request_body_user:
-        user1.user_id = request_body_user["user_id"]
-    if "user_name" in request_body_user:
-        user1.user_name = request_body_user["user_name"]
-    if "user_email" in request_body_user:
-        user1.user_email = request_body_user["user_email"]
+    if "id" in request_body_user:
+        user1.id = request_body_user["id"]
+    if "name" in request_body_user:
+        user1.name = request_body_user["name"]
+    if "email" in request_body_user:
+        user1.email = request_body_user["email"]
     db.session.commit()
 
     return jsonify("ok"), 200
@@ -127,7 +135,7 @@ def post_people():
 
     request_body_people = request.get_json()
 
-    people1 = People(people_name = request_body_people["people_name"], people_url = request_body_people["people_url"], height = request_body_people["height"], mass = request_body_people["mass"], hair_color = request_body_people["hair_color"], skin_color = request_body_people["skin_color"], eye_color = request_body_people["eye_color"], birth_year = request_body_people["birth_year"], gender = request_body_people["gender"], created = request_body_people["created"], edited = request_body_people["edited"], homeworld = request_body_people["homeworld"])
+    people1 = People(name = request_body_people["name"], url = request_body_people["url"], height = request_body_people["height"], mass = request_body_people["mass"], hair_color = request_body_people["hair_color"], skin_color = request_body_people["skin_color"], eye_color = request_body_people["eye_color"], birth_year = request_body_people["birth_year"], gender = request_body_people["gender"], created = request_body_people["created"], edited = request_body_people["edited"], homeworld = request_body_people["homeworld"])
     
     db.session.add(people1)
     db.session.commit()
@@ -142,12 +150,12 @@ def update_people(people_id):
     people1 = People.query.get(people_id)
     if people1 is None:
         raise APIException('Person not found', status_code=404)
-    if "people_id" in request_body_people:
-        People.people_id = request_body_people["people_id"]
-    if "people_name" in request_body_people:
-        People.name = request_body_people["people_name"]
-    if "people_url" in request_body_people:
-        People.people_url = request_body_people["people_url"]
+    if "id" in request_body_people:
+        People.id = request_body_people["id"]
+    if "name" in request_body_people:
+        People.name = request_body_people["name"]
+    if "url" in request_body_people:
+        People.url = request_body_people["url"]
     if "height" in request_body_people:
         People.height = request_body_people["height"]
     if "mass" in request_body_people:
