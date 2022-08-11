@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, Users, People, Favorite_people #, Planets, Favorite_planets
+from models import db, Users, People, Favorite_people, Planets, Favorite_planets
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -30,17 +30,9 @@ def sitemap():
     return generate_sitemap(app)
 
 
-### ______________ ENDPOINTS DE MIS MODELOS: _____________ ###
+### ______________ ENDPOINTS SEGUN INSTRUCCIONES: _____________ ###
 
-### _________ User: _________ ###
-
-@app.route('/favpeople', methods=['GET'])  #### pasar en limpio este endpoint para que arroje data adicional a los id
-def get_favpeople():
-
-    favoritos_planetas = Favorite_people.query.all()
-    favoritos_planetas_ser = list(map(lambda x: x.serialize(), favoritos_planetas))
-    return jsonify(favoritos_planetas_ser), 200
-
+# [GET] /users Listar todos los usuarios del blog
 @app.route('/users', methods=['GET'])
 def get_users():
 
@@ -49,6 +41,72 @@ def get_users():
     all_users = list(map(lambda x: x.serialize(), users))
     print(all_users)
     return jsonify(all_users), 200
+
+# [GET] /people Listar todos los registros de people en la base de datos
+@app.route('/people', methods=['GET'])
+def get_people():
+
+    people = People.query.all()
+    all_people = list(map(lambda x: x.serialize(), people))
+
+    return jsonify(all_people), 200
+
+# [GET] /people/<int:people_id> Listar la información de una sola people
+@app.route('/people/<int:people_id>', methods=['GET'])
+def get_people_unit(people_id):
+
+    people1 = People.query.get(people_id)
+    people1_ser = people1.serialize()
+
+    return jsonify(people1_ser), 200
+
+# [GET] /users/favorites Listar todos los favoritos que pertenecen al usuario actual.
+@app.route('/users/favorites', methods=['GET'])  
+def get_favs():
+
+    favorite_people = Favorite_people.query.filter_by(user_id=1)
+    favorite_people_ser = list(map(lambda x: x.serialize(), favorite_people))
+
+    # favorite_planets = Favorite_planets.query.filter_by(user_id=1)
+    # favorite_planets_ser = list(map(lambda x: x.serialize(), favorite_planets))
+
+    # resultado = users_people_favorites_ser + users_planets_favorites_ser
+    # return jsonify(resultado), 200
+
+    return jsonify(favorite_people_ser), 200
+    
+# [POST] /favorite/people/<int:people_id> Añade una nueva people favorita al usuario actual con el people.id = people_id.
+@app.route('/favorite/people/<int:people_id>', methods=['POST'])
+def post_favorite_people():
+
+    request_body = request.get_json()
+
+    peoplefav1 = Favorite_people(name = request_body["name"], url = request_body["url"], height = request_body["height"], mass = request_body["mass"], hair_color = request_body["hair_color"], skin_color = request_body["skin_color"], eye_color = request_body["eye_color"], birth_year = request_body["birth_year"], gender = request_body["gender"], created = request_body["created"], edited = request_body["edited"], homeworld = request_body["homeworld"])
+    
+    db.session.add(people1)
+    db.session.commit()
+
+    return jsonify(request_body_people), 200
+
+# [POST] /favorite/planet/<int:planet_id> Añade un nuevo planet favorito al usuario actual con el planet id = planet_id.
+
+# [DELETE] /favorite/planet/<int:planet_id> Elimina un planet favorito con el id = planet_id`.
+# [DELETE] /favorite/people/<int:people_id> Elimina una people favorita con el id = people_id.
+
+
+
+
+
+
+# [GET] /planets Listar los registros de planets en la base de datos
+# [GET] /planets/<int:planet_id> Listar la información de un solo planet
+
+@app.route('/favorite/people', methods=['GET'])  
+def get_favpeople():
+
+    favorite_people = Favorite_people.query.all()
+    favorite_people_ser = list(map(lambda x: x.serialize(), favorite_people))
+    return jsonify(favorite_people_ser), 200
 
 @app.route('/users/<int:user_id>', methods=['GET'])
 def get_user(user_id):
@@ -114,21 +172,9 @@ def del_all_users(): #borra todos los usuarios
 
 ### _________ People: _________ ###
 
-@app.route('/people', methods=['GET'])
-def get_people():
 
-    people = People.query.all()
-    all_people = list(map(lambda x: x.serialize(), people))
 
-    return jsonify(all_people), 200
 
-@app.route('/people/<int:people_id>', methods=['GET'])
-def get_people_unit(people_id):
-
-    people1 = People.query.get(people_id)
-    people1_ser = people1.serialize()
-
-    return jsonify(people1_ser), 200
 
 @app.route('/people', methods=['POST'])
 def post_people():
@@ -300,27 +346,6 @@ def del_all_people(): #borra todos los personajes
 
 #     return jsonify("ok"), 200
 
-# ### -------------- METODOS ESPECIALES -------------------
-
-# ### [GET] /users/favorites
-
-# @app.route('/user/<int:user_id>/favorites', methods=['GET'])
-# def get_user_favorites(user_id):
-
-#     user_people_fav = list(filter(lambda x: x.id == user_id, CharacterFavs))
-#     user_people_favorites = list(map(lambda x: x.serialize(), user_people_fav))
-
-#     user_planet_fav = list(filter(lambda x: x.id == user_id, PlanetFavs))
-#     user_planet_favorites = list(map(lambda x: x.serialize() , user_planet_fav))
-
-#     user_favorites = user_people_favorites + user_planet_favorites
-
-#     return jsonify(user_favorites), 200
-
-### [POST] /favorite/planet/<int:planet_id>
-### [POST] /favorite/people/<int:planet_id>
-### [DELETE] /favorite/planet/<int:planet_id>
-### [DELETE] /favorite/people/<int:people_id>
 
 
 # this only runs if `$ python src/main.py` is executed
