@@ -89,7 +89,7 @@ def get_favs():
     resultado = favorite_people_ser + favorite_planets_ser
     return jsonify(resultado), 200
 
-# [POST] /favorite/people/<int:people_id> Añade una nueva people favorita al usuario actual con el people.id = people_id. ###(TESTED OK)
+# [POST] /favorite/people/<int:people_id> Añade una nueva people favorita al usuario actual con el people.id = people_id.#####(TESTED OK)
 @app.route('/favorite/people/<int:people_id>', methods=['POST'])
 def post_favorite_people(people_id):
 
@@ -102,7 +102,7 @@ def post_favorite_people(people_id):
 
     return jsonify(favorite_people2), 200
 
-# [POST] /favorite/planets/<int:planet_id> Añade un nuevo planet favorito al usuario actual con el planet id = planet_id.  ###(TESTED OK)
+# [POST] /favorite/planets/<int:planet_id> Añade un nuevo planet favorito al usuario actual con el planet id = planet_id.######(TESTED OK)
 @app.route('/favorite/planets/<int:planet_id>', methods=['POST'])
 def post_favorite_planet(planet_id):
 
@@ -115,40 +115,59 @@ def post_favorite_planet(planet_id):
 
     return jsonify(favorite_planets2), 200
 
-# [DELETE] /favorite/people/<int:people_id> Elimina una people favorita con el id = people_id.  
+# [DELETE] /favorite/people/<int:people_id> Elimina una people favorita con el id = people_id.  ############################## (TESTED OK)
 @app.route('/favorite/people/<int:people_id>', methods=['DELETE'])
 def del_people_fav(people_id):
 
-    all_fav_people = Favorite_people.query.all()
-    add_fav_people = list(filter(lambda x: x.user_id!=1 or x.people_id!=people_id, all_fav_people))
+    all_fav_people = Favorite_people.query.all() # total de la tabla
+    del_fav_people = list(filter(lambda x: x.user_id==1 and x.people_id==people_id, all_fav_people)) 
 
-    if add_fav_people is None:
+    if del_fav_people is None:
         raise APIException('User and character not found', status_code=404)
     else:
-        db.session.clear()
-        db.session.add(add_fav_people)
-        db.session.commit()
+        for element in del_fav_people:
+            db.session.delete(element)
+            db.session.commit()
 
     return jsonify('eliminado'), 200
 
-# [DELETE] /favorite/planet/<int:planet_id> Elimina un planet favorito con el id = planet_id`.
-@app.route('/favorite/planets/<int:planet_id_url>', methods=['DELETE'])
-def del_planets_fav(planet_id_url):
+# [DELETE] /favorite/planet/<int:planet_id> Elimina un planet favorito con el id = planet_id`.  ############################## (TESTED OK)
+@app.route('/favorite/planets/<int:planet_id>', methods=['DELETE'])
+def del_planet_fav(planet_id):
 
-    favorite_planets = Favorite_planets.query.filter_by(user_id=1)
-    favorite_planets2 = favorite_planets.query.filter_by(planet_id=planet_id_url)
-    favorite_planets2_ser = list(map(lambda x: x.serialize(), favorite_planets2))
-    if favorite_planets2 is None:
-        raise APIException('Favorite_planets for user not found', status_code=404)
+    all_fav_planet = Favorite_planets.query.all() # total de la tabla
+    del_fav_planet = list(filter(lambda x: x.user_id==1 and x.planet_id==planet_id, all_fav_planet)) 
+
+    if del_fav_planet is None:
+        raise APIException('User and planet not found', status_code=404)
     else:
-        db.session.delete(favorite_planets2)
-        db.session.commit()
-        return jsonify("ok"), 200
+        for element in del_fav_planet:
+            db.session.delete(element)
+            db.session.commit()
+
+    return jsonify('eliminado'), 200
+
 
 # AL FINAL DEL FICHERO:
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=PORT, debug=False)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
